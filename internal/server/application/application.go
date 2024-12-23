@@ -74,6 +74,7 @@ func (a *Application) NewHTTPServer() *http.Server {
 		r.Get("/api/items/file/{id}", handlers.GetItemFileHandler(a.storage))
 		r.Delete("/api/items/{id}", handlers.RemoveItemHandler(a.storage))
 		r.Post("/api/items", handlers.AddItemHandler(a.storage))
+		r.Post("/api/items/file", handlers.AddItemFileHandler(a.storage))
 	})
 
 	r.Group(func(r chi.Router) {

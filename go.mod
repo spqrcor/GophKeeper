@@ -1,16 +1,16 @@
 module GophKeeper
 
-go 1.22.8
+go 1.22
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
-	github.com/go-chi/chi/v5 v5.1.0
+	github.com/go-chi/chi/v5 v5.2.0
 	github.com/go-chi/jwtauth/v5 v5.3.2
 	github.com/golang/mock v1.6.0
 	github.com/google/uuid v1.6.0
-	github.com/jackc/pgx/v5 v5.7.1
+	github.com/jackc/pgx/v5 v5.7.2
 	github.com/lestrrat-go/jwx/v2 v2.1.3
-	github.com/pressly/goose/v3 v3.23.1
+	github.com/pressly/goose/v3 v3.24.0
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.31.0
