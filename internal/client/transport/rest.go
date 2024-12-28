@@ -69,9 +69,6 @@ func (r RestTransport) Login(ctx context.Context, input models.InputDataUser) (s
 	req.Header.Add("Content-Type", "application/json")
 
 	resp, err := getClient().Do(req)
-	defer func() {
-		_ = resp.Body.Close()
-	}()
 	if err != nil {
 		return "", err
 	}
@@ -82,6 +79,9 @@ func (r RestTransport) Login(ctx context.Context, input models.InputDataUser) (s
 	if err != nil {
 		return "nil", err
 	}
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 	return string(bodyBytes), nil
 }
 
@@ -101,9 +101,6 @@ func (r RestTransport) AddItem(ctx context.Context, item models.ItemData) (strin
 	req.Header.Add("Content-Type", "application/json")
 
 	resp, err := getClient().Do(req)
-	defer func() {
-		_ = resp.Body.Close()
-	}()
 	if err != nil {
 		return "", err
 	}
@@ -114,6 +111,9 @@ func (r RestTransport) AddItem(ctx context.Context, item models.ItemData) (strin
 	if err != nil {
 		return "nil", err
 	}
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 	return string(bodyBytes), nil
 }
 
@@ -134,9 +134,6 @@ func (r RestTransport) GetItems(ctx context.Context) ([]models.ItemData, error) 
 	req.Header.Set("Authorization", "Bearer "+r.data.Token)
 
 	resp, err := getClient().Do(req)
-	defer func() {
-		_ = resp.Body.Close()
-	}()
 	if err != nil {
 		return nil, err
 	}
@@ -148,6 +145,9 @@ func (r RestTransport) GetItems(ctx context.Context) ([]models.ItemData, error) 
 	if err = json.Unmarshal(bodyBytes, &data); err != nil {
 		return nil, err
 	}
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 	return data, nil
 }
 
@@ -161,9 +161,6 @@ func (r RestTransport) GetItemFile(ctx context.Context, itemId string) ([]byte, 
 	}
 	req.Header.Set("Authorization", "Bearer "+r.data.Token)
 	resp, err := getClient().Do(req)
-	defer func() {
-		_ = resp.Body.Close()
-	}()
 	if err != nil {
 		return nil, err
 	}
@@ -174,6 +171,9 @@ func (r RestTransport) GetItemFile(ctx context.Context, itemId string) ([]byte, 
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 	return bodyBytes, nil
 }
 
