@@ -14,11 +14,11 @@ type Transport interface {
 	Register(ctx context.Context, input models.InputDataUser) error
 	Login(ctx context.Context, input models.InputDataUser) (string, error)
 	AddItem(ctx context.Context, item models.ItemData) (string, error)
-	AddItemFile(ctx context.Context, fileBytes []byte) (string, error)
+	AddItemFile(ctx context.Context, filePath string) (models.ItemData, error)
 	GetItems(ctx context.Context) ([]models.ItemData, error)
-	GetItemFile(ctx context.Context, itemId string) ([]byte, error)
 	RemoveItem(ctx context.Context, itemId string) error
-	GetData() Data
+	GetData() *Data
+	SetData() error
 }
 
 // Data тип данных локального хранения
@@ -51,5 +51,5 @@ func NewTransport(config config.Config, logger *zap.Logger) Transport {
 			_ = json.Unmarshal(decryptData, &data)
 		}
 	}
-	return CreateRestTransport(config, logger, data)
+	return CreateRestTransport(config, logger, &data)
 }

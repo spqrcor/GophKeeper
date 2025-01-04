@@ -2,6 +2,7 @@ package transport
 
 import (
 	"GophKeeper/internal/client/config"
+	"GophKeeper/internal/client/crypt"
 	"GophKeeper/internal/client/models"
 	"bytes"
 	"context"
@@ -10,7 +11,10 @@ import (
 	"fmt"
 	"go.uber.org/zap"
 	"io"
+	"mime/multipart"
 	"net/http"
+	"os"
+	"path/filepath"
 )
 
 var ErrHttpNotOk = fmt.Errorf("http response not ok")
@@ -18,15 +22,15 @@ var ErrHttpNotOk = fmt.Errorf("http response not ok")
 type RestTransport struct {
 	config config.Config
 	logger *zap.Logger
-	data   Data
+	Data   *Data
 }
 
 // CreateRestTransport создание db хранилища, config - конфиг, logger - логгер
-func CreateRestTransport(config config.Config, logger *zap.Logger, data Data) Transport {
+func CreateRestTransport(config config.Config, logger *zap.Logger, data *Data) Transport {
 	return RestTransport{
 		config: config,
 		logger: logger,
-		data:   data,
+		Data:   data,
 	}
 }
 
@@ -97,7 +101,7 @@ func (r RestTransport) AddItem(ctx context.Context, item models.ItemData) (strin
 	if err != nil {
 		return "", err
 	}
-	req.Header.Set("Authorization", "Bearer "+r.data.Token)
+	req.Header.Set("Authorization", "Bearer "+r.Data.Token)
 	req.Header.Add("Content-Type", "application/json")
 
 	resp, err := getClient().Do(req)
@@ -118,8 +122,62 @@ func (r RestTransport) AddItem(ctx context.Context, item models.ItemData) (strin
 }
 
 // AddItemFile добавление файла записи
-func (r RestTransport) AddItemFile(ctx context.Context, fileBytes []byte) (string, error) {
-	return "", nil
+func (r RestTransport) AddItemFile(ctx context.Context, filePath string) (models.ItemData, error) {
+	data := models.ItemData{
+		Type:     "FILE",
+		FileName: filepath.Base(filePath),
+	}
+
+	file, err := os.Open(filePath)
+	if err != nil {
+		return data, err
+	}
+	defer file.Close()
+
+	body := &bytes.Buffer{}
+	writer := multipart.NewWriter(body)
+
+	part, err := writer.CreateFormFile("file", data.FileName)
+	if err != nil {
+		return data, err
+	}
+	_, err = io.Copy(part, file)
+	if err != nil {
+		return data, err
+	}
+	err = writer.Close()
+	if err != nil {
+		return data, err
+	}
+
+	childCtx, cancel := context.WithTimeout(ctx, r.config.RequestTimeOut)
+	defer cancel()
+	req, err := http.NewRequestWithContext(childCtx, http.MethodPost, r.config.Api+"/api/items/file", body)
+	if err != nil {
+		return data, err
+	}
+	req.Header.Add("Content-Type", writer.FormDataContentType())
+	req.Header.Set("Authorization", "Bearer "+r.Data.Token)
+
+	resp, err := getClient().Do(req)
+	if err != nil {
+		return data, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return data, ErrHttpNotOk
+	}
+
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return data, err
+	}
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+
+	data.Id = string(bodyBytes)
+
+	return data, nil
 }
 
 // GetItems получение значений
@@ -131,7 +189,7 @@ func (r RestTransport) GetItems(ctx context.Context) ([]models.ItemData, error) 
 	if err != nil {
 		return nil, err
 	}
-	req.Header.Set("Authorization", "Bearer "+r.data.Token)
+	req.Header.Set("Authorization", "Bearer "+r.Data.Token)
 
 	resp, err := getClient().Do(req)
 	if err != nil {
@@ -151,32 +209,6 @@ func (r RestTransport) GetItems(ctx context.Context) ([]models.ItemData, error) 
 	return data, nil
 }
 
-// GetItemFile получение файла записи
-func (r RestTransport) GetItemFile(ctx context.Context, itemId string) ([]byte, error) {
-	childCtx, cancel := context.WithTimeout(ctx, r.config.RequestTimeOut)
-	defer cancel()
-	req, err := http.NewRequestWithContext(childCtx, http.MethodGet, r.config.Api+"/api/items/file/"+itemId, nil)
-	if err != nil {
-		return nil, err
-	}
-	req.Header.Set("Authorization", "Bearer "+r.data.Token)
-	resp, err := getClient().Do(req)
-	if err != nil {
-		return nil, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, ErrHttpNotOk
-	}
-	bodyBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	defer func() {
-		_ = resp.Body.Close()
-	}()
-	return bodyBytes, nil
-}
-
 // RemoveItem удаление записи
 func (r RestTransport) RemoveItem(ctx context.Context, itemId string) error {
 	childCtx, cancel := context.WithTimeout(ctx, r.config.RequestTimeOut)
@@ -185,7 +217,7 @@ func (r RestTransport) RemoveItem(ctx context.Context, itemId string) error {
 	if err != nil {
 		return err
 	}
-	req.Header.Set("Authorization", "Bearer "+r.data.Token)
+	req.Header.Set("Authorization", "Bearer "+r.Data.Token)
 	resp, err := getClient().Do(req)
 	if err != nil {
 		return err
@@ -197,8 +229,27 @@ func (r RestTransport) RemoveItem(ctx context.Context, itemId string) error {
 }
 
 // GetData получение настроек
-func (r RestTransport) GetData() Data {
-	return r.data
+func (r RestTransport) GetData() *Data {
+	return r.Data
+}
+
+// SetData Запись новых настроек
+func (r RestTransport) SetData() error {
+	x, err := json.Marshal(r.Data)
+	if err != nil {
+		return err
+	}
+	cryptData, err := crypt.Encrypt(x, r.config.SecretKey)
+	if err != nil {
+		return err
+	}
+	if err := os.Truncate(r.config.DataPath+"/"+r.config.TransportFile, 0); err != nil {
+		return err
+	}
+	if err := os.WriteFile(r.config.DataPath+"/"+r.config.TransportFile, cryptData, 0666); err != nil {
+		return err
+	}
+	return nil
 }
 
 func getClient() *http.Client {

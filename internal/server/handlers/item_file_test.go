@@ -59,17 +59,12 @@ func TestGetItemFileHandler(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			_, tokenString, _ := tokenAuth.Encode(map[string]interface{}{"UserID": tt.userID, "PIN": "1234"})
 			r := chi.NewRouter()
-			r.Use(
-				jwtauth.Verifier(tokenAuth),
-				jwtauth.Authenticator(tokenAuth),
-			)
 
-			r.Get("/api/items/file/{id}", GetItemFileHandler(store))
+			r.Get("/api/items/file/{id}/token/{token}", GetItemFileHandler(store, tokenAuth))
 			ts := httptest.NewServer(r)
 			defer ts.Close()
-			req, _ := http.NewRequest(http.MethodGet, ts.URL+"/api/items/file/"+tt.itemID, nil)
+			req, _ := http.NewRequest(http.MethodGet, ts.URL+"/api/items/file/"+tt.itemID+"/token/"+tokenString, nil)
 
-			req.Header.Set("Authorization", "Bearer "+tokenString)
 			resp, _ := http.DefaultClient.Do(req)
 			assert.Equal(t, tt.statusCode, resp.StatusCode, "Error http status code")
 		})

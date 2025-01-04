@@ -71,7 +71,6 @@ func (a *Application) NewHTTPServer() *http.Server {
 		r.Use(jwtauth.Verifier(a.tokenAuth))
 		r.Use(jwtauth.Authenticator(a.tokenAuth))
 		r.Get("/api/items", handlers.GetItemsHandler(a.storage))
-		r.Get("/api/items/file/{id}", handlers.GetItemFileHandler(a.storage))
 		r.Delete("/api/items/{id}", handlers.RemoveItemHandler(a.storage))
 		r.Post("/api/items", handlers.AddItemHandler(a.storage))
 		r.Post("/api/items/file", handlers.AddItemFileHandler(a.storage))
@@ -80,6 +79,7 @@ func (a *Application) NewHTTPServer() *http.Server {
 	r.Group(func(r chi.Router) {
 		r.Post("/api/user/register", handlers.RegisterHandler(a.storage))
 		r.Post("/api/user/login", handlers.LoginHandler(a.storage, a.tokenAuth))
+		r.Get("/api/items/file/{id}/token/{token}", handlers.GetItemFileHandler(a.storage, a.tokenAuth))
 	})
 
 	r.HandleFunc(`/*`, func(res http.ResponseWriter, req *http.Request) {
