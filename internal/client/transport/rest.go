@@ -252,6 +252,7 @@ func (r RestTransport) SetData() error {
 	return nil
 }
 
+// getClient получение http клиента без проверки сертификата
 func getClient() *http.Client {
 	return &http.Client{
 		Transport: &http.Transport{
