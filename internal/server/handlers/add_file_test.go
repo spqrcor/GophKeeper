@@ -69,7 +69,7 @@ func TestAddItemFileHandler(t *testing.T) {
 				jwtauth.Verifier(tokenAuth),
 				jwtauth.Authenticator(tokenAuth),
 			)
-			r.Post("/api/items/file", AddItemFileHandler(store))
+			r.Post("/api/items/file", AddItemFileHandler(store, conf.MaxUploadFileSize))
 			ts := httptest.NewServer(r)
 			defer ts.Close()
 

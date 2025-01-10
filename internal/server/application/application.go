@@ -73,7 +73,7 @@ func (a *Application) NewHTTPServer() *http.Server {
 		r.Get("/api/items", handlers.GetItemsHandler(a.storage))
 		r.Delete("/api/items/{id}", handlers.RemoveItemHandler(a.storage))
 		r.Post("/api/items", handlers.AddItemHandler(a.storage))
-		r.Post("/api/items/file", handlers.AddItemFileHandler(a.storage))
+		r.Post("/api/items/file", handlers.AddItemFileHandler(a.storage, a.config.MaxUploadFileSize))
 	})
 
 	r.Group(func(r chi.Router) {

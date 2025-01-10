@@ -12,24 +12,26 @@ import (
 
 // Config тип для хранение конфига
 type Config struct {
-	Addr         string        `env:"SERVER_ADDRESS" json:"server_address"`
-	LogLevel     zapcore.Level `env:"LOG_LEVEL"`
-	DatabaseDSN  string        `env:"DATABASE_DSN" json:"database_dsn"`
-	QueryTimeOut time.Duration `env:"QUERY_TIME_OUT"`
-	SecretKey    string        `env:"SECRET_KEY"`
-	Salt         string        `env:"SALT"`
-	TokenExp     time.Duration `env:"TOKEN_EXPIRATION"`
+	Addr              string        `env:"SERVER_ADDRESS" json:"server_address"`
+	LogLevel          zapcore.Level `env:"LOG_LEVEL"`
+	DatabaseDSN       string        `env:"DATABASE_DSN" json:"database_dsn"`
+	QueryTimeOut      time.Duration `env:"QUERY_TIME_OUT"`
+	SecretKey         string        `env:"SECRET_KEY"`
+	Salt              string        `env:"SALT"`
+	TokenExp          time.Duration `env:"TOKEN_EXPIRATION"`
+	MaxUploadFileSize int64         `env:"MAX_UPLOAD_FILE_SIZE"`
 }
 
 // cfg переменная конфига
 var cfg = Config{
-	Addr:         "localhost:8081",
-	LogLevel:     zap.InfoLevel,
-	DatabaseDSN:  "postgres://postgres:Sp123456@localhost:5432/gophkeeper?sslmode=disable",
-	QueryTimeOut: 3,
-	SecretKey:    "KLJ-fo3Fksd3fl!=",
-	Salt:         "Sph2b@o_=zx",
-	TokenExp:     time.Hour * 3,
+	Addr:              "localhost:8081",
+	LogLevel:          zap.InfoLevel,
+	DatabaseDSN:       "postgres://postgres:Sp123456@localhost:5432/gophkeeper?sslmode=disable",
+	QueryTimeOut:      3,
+	SecretKey:         "KLJ-fo3Fksd3fl!=",
+	Salt:              "Sph2b@o_=zx",
+	TokenExp:          time.Hour * 3,
+	MaxUploadFileSize: 1024 * 1024 * 10,
 }
 
 var once sync.Once
