@@ -6,33 +6,33 @@ import (
 )
 
 // addRegForm форма регистрации
-func (a *Application) addRegForm() *tview.Form {
+func (app *Application) addRegForm() *tview.Form {
 	data := models.InputDataUser{}
 	var password2 string
 
-	a.regForm.AddInputField("Login", "", 20, nil, func(val string) {
+	app.regForm.AddInputField("Login", "", 20, nil, func(val string) {
 		data.Login = val
 	})
-	a.regForm.AddPasswordField("Password", "", 20, 0, func(val string) {
+	app.regForm.AddPasswordField("Password", "", 20, 0, func(val string) {
 		data.Password = val
 	})
-	a.regForm.AddPasswordField("Password retry", "", 20, 0, func(val string) {
+	app.regForm.AddPasswordField("Password retry", "", 20, 0, func(val string) {
 		password2 = val
 	})
-	a.regForm.AddButton("save", func() {
+	app.regForm.AddButton("save", func() {
 		if err := validateRegForm(data.Login, data.Password, password2); err != nil {
-			a.regModal.SetText(err.Error())
+			app.regModal.SetText(err.Error())
 		} else {
-			if err := a.transport.Register(a.ctx, data); err != nil {
-				a.regModal.SetText(err.Error())
+			if err := app.transport.Register(app.ctx, data); err != nil {
+				app.regModal.SetText(err.Error())
 			} else {
-				a.regModal.SetText("Успешная регистрация")
+				app.regModal.SetText("Успешная регистрация")
 			}
 		}
-		a.pages.SwitchToPage("Reg Modal")
+		app.pages.SwitchToPage(RegModalLink)
 	})
-	a.regForm.AddButton("quit", func() {
-		a.pages.SwitchToPage("Menu")
+	app.regForm.AddButton("quit", func() {
+		app.pages.SwitchToPage(MenuLink)
 	})
-	return a.regForm
+	return app.regForm
 }

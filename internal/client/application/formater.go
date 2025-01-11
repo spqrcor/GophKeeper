@@ -24,29 +24,56 @@ func formatTitle(data models.ItemData) string {
 	return "Тип не определен"
 }
 
-// formatFull полное отображение записи
-func formatFull(data models.ItemData, config config.Config, transportData *transport.Data) string {
+// formatFullText описание текста
+func formatFullText(data models.ItemData) string {
 	text := "Тип: " + getTypeDescription(data.Type) + "\n"
 	text += "Добавлен: " + formatDescription(data) + "\n"
-
-	if data.Type == "TEXT" {
-		text += "Текст: " + data.Text
-	}
-	if data.Type == "CARD" {
-		text += "Номер: " + data.CardNum + "\n"
-		text += "CVV: " + data.CardPin + "\n"
-		text += "Срок действия: " + data.CardValid + "\n"
-		text += "Плательщик: " + data.CardPayer
-	}
-	if data.Type == "FILE" {
-		text += "Название: " + data.FileName + "\n"
-		text += "Ссылка: " + config.Api + "/api/items/file/" + data.Id + "/token/" + transportData.Token
-	}
-	if data.Type == "AUTH" {
-		text += "Логин: " + data.Login + "\n"
-		text += "Пароль: " + data.Password
-	}
+	text += "Текст: " + data.Text
 	return text
+}
+
+// formatFullCard описание карты
+func formatFullCard(data models.ItemData) string {
+	text := "Тип: " + getTypeDescription(data.Type) + "\n"
+	text += "Добавлен: " + formatDescription(data) + "\n"
+	text += "Номер: " + data.CardNum + "\n"
+	text += "CVV: " + data.CardPin + "\n"
+	text += "Срок действия: " + data.CardValid + "\n"
+	text += "Плательщик: " + data.CardPayer
+	return text
+}
+
+// formatFullFile описание файла
+func formatFullFile(data models.ItemData, config config.Config, transportData *transport.Data) string {
+	text := "Тип: " + getTypeDescription(data.Type) + "\n"
+	text += "Добавлен: " + formatDescription(data) + "\n"
+	text += "Название: " + data.FileName + "\n"
+	text += "Ссылка: " + config.Api + "/api/items/file/" + data.Id + "/token/" + transportData.Token
+	return text
+}
+
+// formatFullTextAuth описание авторизации
+func formatFullTextAuth(data models.ItemData) string {
+	text := "Тип: " + getTypeDescription(data.Type) + "\n"
+	text += "Добавлен: " + formatDescription(data) + "\n"
+	text += "Логин: " + data.Login + "\n"
+	text += "Пароль: " + data.Password
+	return text
+}
+
+// formatFull полное отображение записи
+func formatFull(data models.ItemData, config config.Config, transportData *transport.Data) string {
+	switch data.Type {
+	case "TEXT":
+		return formatFullText(data)
+	case "CARD":
+		return formatFullCard(data)
+	case "FILE":
+		return formatFullFile(data, config, transportData)
+	case "AUTH":
+		return formatFullTextAuth(data)
+	}
+	return "Тип не определен"
 }
 
 // getTypeDescription получение описания типа

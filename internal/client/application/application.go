@@ -56,80 +56,9 @@ func NewApplication(opts ...func(*Application)) *Application {
 			SetText("(r) remove\n(b) back \n(q) to quit"),
 	}
 
-	app.pinModal = tview.NewModal().
-		AddButtons([]string{"Ok"}).SetDoneFunc(func(buttonIndex int, buttonLabel string) {
-		app.pages.SwitchToPage("Pin Form")
-	})
-	app.regModal = tview.NewModal().
-		AddButtons([]string{"Ok"}).SetDoneFunc(func(buttonIndex int, buttonLabel string) {
-		app.pages.SwitchToPage("Reg Form")
-	})
-	app.loginModal = tview.NewModal().
-		AddButtons([]string{"Ok"}).SetDoneFunc(func(buttonIndex int, buttonLabel string) {
-		app.pages.SwitchToPage("Login Form")
-	})
-	app.newItemModal = tview.NewModal().
-		AddButtons([]string{"Ok"}).SetDoneFunc(func(buttonIndex int, buttonLabel string) {
-		app.pages.SwitchToPage("New Item Form")
-	})
-	app.removeModal = tview.NewModal().
-		AddButtons([]string{"Ok"}).SetDoneFunc(func(buttonIndex int, buttonLabel string) {
-		app.pages.SwitchToPage("Items")
-	})
-
-	app.newItemsMenu = tview.NewList().
-		AddItem("New Item Text", "Добавление текста", 't', func() {
-			app.newItemForm.Clear(true)
-			app.addNewItemForm("TEXT")
-			app.pages.SwitchToPage("New Item Form")
-		}).
-		AddItem("New Item Login", "Добавление логина/пароля", 'l', func() {
-			app.newItemForm.Clear(true)
-			app.addNewItemForm("AUTH")
-			app.pages.SwitchToPage("New Item Form")
-		}).
-		AddItem("New Item Card", "Добавление данных по карте", 'c', func() {
-			app.newItemForm.Clear(true)
-			app.addNewItemForm("CARD")
-			app.pages.SwitchToPage("New Item Form")
-		}).
-		AddItem("New Item File", "Добавление файла", 'f', func() {
-			app.newItemForm.Clear(true)
-			app.addNewItemForm("FILE")
-			app.pages.SwitchToPage("New Item Form")
-		}).
-		AddItem("Back", "Вернуться в главное меню", 'b', func() {
-			app.pages.SwitchToPage("Menu")
-		}).
-		AddItem("Quit", "Закрыть приложение", 'q', func() {
-			app.tapp.Stop()
-		})
-
-	app.menu = tview.NewList().
-		AddItem("Set PIN", "Установка PIN", 'p', func() {
-			app.pinForm.Clear(true)
-			app.addPinForm()
-			app.pages.SwitchToPage("Pin Form")
-		}).
-		AddItem("Registration", "Форма регистрации", 'r', func() {
-			app.regForm.Clear(true)
-			app.addRegForm()
-			app.pages.SwitchToPage("Reg Form")
-		}).
-		AddItem("Login form", "Форма авторизации", 'l', func() {
-			app.loginForm.Clear(true)
-			app.addLoginForm()
-			app.pages.SwitchToPage("Login Form")
-		}).
-		AddItem("Items", "Список записей", 'n', func() {
-			app.pages.SwitchToPage("Items")
-		}).
-		AddItem("New item", "Добавление записи", 'n', func() {
-			app.pages.SwitchToPage("New Items Menu")
-		}).
-		AddItem("Quit", "Закрыть приложение", 'q', func() {
-			app.tapp.Stop()
-		})
+	app.initModals()
+	app.newItemsMenu = app.createNewItemMenu()
+	app.menu = app.createMainMenu()
 
 	for _, opt := range opts {
 		opt(app)
@@ -159,83 +88,71 @@ func WithTransport(transport transport.Transport) func(*Application) {
 }
 
 // syncData получение данных с сервера
-func (a *Application) syncData() {
-	items, err := a.transport.GetItems(a.ctx)
+func (app *Application) syncData() {
+	items, err := app.transport.GetItems(app.ctx)
 	if err != nil {
 		return
 	}
-	a.data = items
-	a.refreshItemsList()
+	app.data = items
+	app.refreshItemsList()
 }
 
 // refreshItemsList выставление списка
-func (a *Application) refreshItemsList() {
-	a.itemsList.Clear()
-	for index, item := range a.data {
-		a.itemsList.AddItem(formatTitle(item), " ", rune(49+index), nil)
+func (app *Application) refreshItemsList() {
+	app.itemsList.Clear()
+	for index, item := range app.data {
+		app.itemsList.AddItem(formatTitle(item), " ", rune(49+index), nil)
 	}
 }
 
 // setConcatText отображение подробных данных
-func (a *Application) setConcatText(item *models.ItemData) {
-	a.itemText.Clear()
-	a.itemText.SetText(formatFull(*item, a.config, a.transport.GetData()))
+func (app *Application) setConcatText(item *models.ItemData) {
+	app.itemText.Clear()
+	app.itemText.SetText(formatFull(*item, app.config, app.transport.GetData()))
 }
 
 // deleteListItem удаление записи
-func (a *Application) deleteListItem(i int) {
-	if err := a.transport.RemoveItem(a.ctx, a.data[i].Id); err != nil {
-		a.removeModal.SetText(err.Error())
-		a.pages.SwitchToPage("Remove Modal")
+func (app *Application) deleteListItem(i int) {
+	if err := app.transport.RemoveItem(app.ctx, app.data[i].Id); err != nil {
+		app.removeModal.SetText(err.Error())
+		app.pages.SwitchToPage(RemoveModalLink)
 	} else {
-		a.data = append(a.data[:i], a.data[i+1:]...)
-		a.itemText.Clear()
-		a.refreshItemsList()
+		app.data = append(app.data[:i], app.data[i+1:]...)
+		app.itemText.Clear()
+		app.refreshItemsList()
 	}
 }
 
 // Start запуск приложения
-func (a *Application) Start() {
-	transportData := a.transport.GetData()
+func (app *Application) Start() {
+	transportData := app.transport.GetData()
 	if len(transportData.Token) > 0 {
-		a.syncData()
+		app.syncData()
 	}
 
-	a.itemsList.SetSelectedFunc(func(index int, name string, second_name string, shortcut rune) {
-		a.setConcatText(&a.data[index])
+	app.itemsList.SetSelectedFunc(func(index int, name string, second_name string, shortcut rune) {
+		app.setConcatText(&app.data[index])
 	})
 
-	a.flex.SetDirection(tview.FlexRow).
+	app.flex.SetDirection(tview.FlexRow).
 		AddItem(tview.NewFlex().
-			AddItem(a.itemsList, 0, 1, true).
-			AddItem(a.itemText, 0, 4, false), 0, 6, false).
-		AddItem(a.text, 0, 1, false)
+			AddItem(app.itemsList, 0, 1, true).
+			AddItem(app.itemText, 0, 4, false), 0, 6, false).
+		AddItem(app.text, 0, 1, false)
 
-	a.flex.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
+	app.flex.SetInputCapture(func(event *tcell.EventKey) *tcell.EventKey {
 		if event.Rune() == 113 {
-			a.tapp.Stop()
+			app.tapp.Stop()
 		} else if event.Rune() == 98 {
-			a.pages.SwitchToPage("Menu")
+			app.pages.SwitchToPage(MenuLink)
 		} else if event.Rune() == 114 {
-			a.deleteListItem(a.itemsList.GetCurrentItem())
+			app.deleteListItem(app.itemsList.GetCurrentItem())
 		}
 		return event
 	})
+	app.addPages()
 
-	a.pages.AddPage("Menu", a.menu, true, true)
-	a.pages.AddPage("Pin Form", a.pinForm, true, false)
-	a.pages.AddPage("Reg Form", a.regForm, true, false)
-	a.pages.AddPage("Login Form", a.loginForm, true, false)
-	a.pages.AddPage("New Items Menu", a.newItemsMenu, true, false)
-	a.pages.AddPage("Pin Modal", a.pinModal, false, false)
-	a.pages.AddPage("Reg Modal", a.regModal, false, false)
-	a.pages.AddPage("Login Modal", a.loginModal, false, false)
-	a.pages.AddPage("Remove Modal", a.removeModal, false, false)
-	a.pages.AddPage("New Item Modal", a.newItemModal, false, false)
-	a.pages.AddPage("New Item Form", a.newItemForm, false, false)
-	a.pages.AddPage("Items", a.flex, true, false)
-
-	if err := a.tapp.SetRoot(a.pages, true).EnableMouse(true).Run(); err != nil {
-		a.logger.Fatal(err.Error())
+	if err := app.tapp.SetRoot(app.pages, true).EnableMouse(true).Run(); err != nil {
+		app.logger.Fatal(err.Error())
 	}
 }

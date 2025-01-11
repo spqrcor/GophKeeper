@@ -5,32 +5,32 @@ import (
 )
 
 // addPinForm форма для выставление пина
-func (a *Application) addPinForm() *tview.Form {
+func (app *Application) addPinForm() *tview.Form {
 
 	var pin, pin2 string
 
-	a.pinForm.AddPasswordField("PIN", "", 20, 0, func(val string) {
+	app.pinForm.AddPasswordField("PIN", "", 20, 0, func(val string) {
 		pin = val
 	})
-	a.pinForm.AddPasswordField("PIN retry", "", 20, 0, func(val string) {
+	app.pinForm.AddPasswordField("PIN retry", "", 20, 0, func(val string) {
 		pin2 = val
 	})
-	a.pinForm.AddButton("save", func() {
+	app.pinForm.AddButton("save", func() {
 		if err := validatePinForm(pin, pin2); err != nil {
-			a.pinModal.SetText(err.Error())
+			app.pinModal.SetText(err.Error())
 		} else {
-			transportData := a.transport.GetData()
+			transportData := app.transport.GetData()
 			transportData.Pin = pin
-			if err := a.transport.SetData(); err != nil {
-				a.pinModal.SetText(err.Error())
+			if err := app.transport.SetData(); err != nil {
+				app.pinModal.SetText(err.Error())
 			} else {
-				a.pinModal.SetText("PIN успешно установлен")
+				app.pinModal.SetText("PIN успешно установлен")
 			}
 		}
-		a.pages.SwitchToPage("Pin Modal")
+		app.pages.SwitchToPage(PinModalLink)
 	})
-	a.pinForm.AddButton("quit", func() {
-		a.pages.SwitchToPage("Menu")
+	app.pinForm.AddButton("quit", func() {
+		app.pages.SwitchToPage(MenuLink)
 	})
-	return a.pinForm
+	return app.pinForm
 }
