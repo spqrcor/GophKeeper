@@ -3,12 +3,18 @@ package handlers
 import (
 	"GophKeeper/internal/server/storage"
 	"GophKeeper/internal/server/utils"
+	"context"
 	"errors"
 	"net/http"
 )
 
+// RegisterUser интерфейс регистрации
+type RegisterUser interface {
+	Register(ctx context.Context, input storage.InputDataUser) error
+}
+
 // RegisterHandler обработчик роута: POST /api/user/register
-func RegisterHandler(s storage.Storage) http.HandlerFunc {
+func RegisterHandler(r RegisterUser) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		var input storage.InputDataUser
 		if err := utils.FromPostJSON(req, &input); err != nil {
@@ -16,7 +22,7 @@ func RegisterHandler(s storage.Storage) http.HandlerFunc {
 			return
 		}
 
-		err := s.Register(req.Context(), input)
+		err := r.Register(req.Context(), input)
 		if errors.Is(err, storage.ErrValidation) {
 			http.Error(res, err.Error(), http.StatusBadRequest)
 			return

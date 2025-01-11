@@ -3,13 +3,19 @@ package handlers
 import (
 	"GophKeeper/internal/server/storage"
 	"GophKeeper/internal/server/utils"
+	"context"
 	"errors"
 	"github.com/go-chi/jwtauth/v5"
 	"net/http"
 )
 
+// LoginUser интерфейс авторизации
+type LoginUser interface {
+	Login(ctx context.Context, input storage.InputDataUser) (string, error)
+}
+
 // LoginHandler обработчик роута: POST /api/user/login
-func LoginHandler(s storage.Storage, tokenAuth *jwtauth.JWTAuth) http.HandlerFunc {
+func LoginHandler(l LoginUser, tokenAuth *jwtauth.JWTAuth) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		var input storage.InputDataUser
 		if err := utils.FromPostJSON(req, &input); err != nil {
@@ -17,7 +23,7 @@ func LoginHandler(s storage.Storage, tokenAuth *jwtauth.JWTAuth) http.HandlerFun
 			return
 		}
 
-		UserID, err := s.Login(req.Context(), input)
+		UserID, err := l.Login(req.Context(), input)
 		if errors.Is(err, storage.ErrLogin) {
 			http.Error(res, err.Error(), http.StatusUnauthorized)
 			return

@@ -8,8 +8,13 @@ import (
 	"net/http"
 )
 
+// AddItem интерфейс данных по записи
+type AddItem interface {
+	AddItem(ctx context.Context, item storage.CommonData, userID string, pin string, fileBytes []byte) (string, error)
+}
+
 // AddItemHandler обработчик роута: POST /api/items
-func AddItemHandler(s storage.Storage) http.HandlerFunc {
+func AddItemHandler(a AddItem) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		var input storage.CommonData
 		if err := utils.FromPostJSON(req, &input); err != nil {
@@ -27,7 +32,7 @@ func AddItemHandler(s storage.Storage) http.HandlerFunc {
 			return
 		}
 
-		itemID, err := s.AddItem(context.Background(), input, claims["UserID"].(string), claims["PIN"].(string), nil)
+		itemID, err := a.AddItem(context.Background(), input, claims["UserID"].(string), claims["PIN"].(string), nil)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return

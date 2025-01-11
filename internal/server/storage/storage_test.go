@@ -1,22 +1,9 @@
 package storage
 
 import (
-	"GophKeeper/internal/server/config"
-	"GophKeeper/internal/server/logger"
 	"github.com/stretchr/testify/assert"
-	"go.uber.org/zap"
-	"reflect"
-
 	"testing"
 )
-
-func TestNewStorage(t *testing.T) {
-	conf := config.NewConfig()
-	loggerRes, _ := logger.NewLogger(zap.InfoLevel)
-
-	res := NewStorage(conf, loggerRes)
-	assert.Equal(t, reflect.TypeOf(res).String() == "storage.DBStorage", true)
-}
 
 func TestUserValidator(t *testing.T) {
 	tests := []struct {

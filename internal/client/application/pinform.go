@@ -1,7 +1,6 @@
 package application
 
 import (
-	"GophKeeper/internal/client/models"
 	"github.com/rivo/tview"
 )
 

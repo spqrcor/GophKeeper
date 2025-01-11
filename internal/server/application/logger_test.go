@@ -4,7 +4,8 @@ import (
 	"GophKeeper/internal/server/config"
 	"GophKeeper/internal/server/handlers"
 	"GophKeeper/internal/server/logger"
-	"GophKeeper/internal/server/storage"
+	"GophKeeper/internal/server/storage/db"
+	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/go-chi/chi/v5"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
@@ -17,12 +18,12 @@ import (
 func Test_loggerMiddleware(t *testing.T) {
 	conf := config.NewConfig()
 	loggerRes, _ := logger.NewLogger(zap.InfoLevel)
-	store := storage.NewStorage(conf, loggerRes)
+	dbRes, _, _ := sqlmock.New()
 
 	r := chi.NewRouter()
 	r.Use(LoggerMiddleware(loggerRes))
 
-	r.Post(`/`, handlers.RegisterHandler(store))
+	r.Post(`/`, handlers.RegisterHandler(db.CreateRegisterUserDB(conf, dbRes)))
 	srv := httptest.NewServer(r)
 	defer srv.Close()
 

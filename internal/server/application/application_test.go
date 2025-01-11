@@ -3,7 +3,7 @@ package application
 import (
 	"GophKeeper/internal/server/config"
 	"GophKeeper/internal/server/logger"
-	"GophKeeper/internal/server/storage"
+	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/go-chi/jwtauth/v5"
 	"github.com/lestrrat-go/jwx/v2/jwt"
 	"github.com/stretchr/testify/assert"
@@ -17,11 +17,12 @@ import (
 func TestNewApplication(t *testing.T) {
 	conf := config.NewConfig()
 	loggerRes, _ := logger.NewLogger(zap.InfoLevel)
+	dbRes, _, _ := sqlmock.New()
 
 	server := NewApplication(
 		WithLogger(loggerRes),
 		WithConfig(conf),
-		WithStorage(storage.NewStorage(conf, loggerRes)),
+		WithDB(dbRes),
 		WithTokenAuth(jwtauth.New("HS256", []byte(conf.SecretKey), nil, jwt.WithAcceptableSkew(conf.TokenExp))),
 	)
 	assert.Equal(t, reflect.TypeOf(server).String() == "*application.Application", true)
@@ -30,11 +31,12 @@ func TestNewApplication(t *testing.T) {
 func TestStart(t *testing.T) {
 	conf := config.NewConfig()
 	loggerRes, _ := logger.NewLogger(zap.InfoLevel)
+	dbRes, _, _ := sqlmock.New()
 
 	server := NewApplication(
 		WithLogger(loggerRes),
 		WithConfig(conf),
-		WithStorage(storage.NewStorage(conf, loggerRes)),
+		WithDB(dbRes),
 		WithTokenAuth(jwtauth.New("HS256", []byte(conf.SecretKey), nil, jwt.WithAcceptableSkew(conf.TokenExp))),
 	)
 	go func() {

@@ -2,18 +2,25 @@
 package storage
 
 import (
-	"GophKeeper/internal/server/config"
-	"GophKeeper/internal/server/db"
-	"context"
 	"fmt"
-	"go.uber.org/zap"
 	"slices"
+)
+
+const (
+	minPasswordLength = 6
+	maxPasswordLength = 72
+	minLoginLength    = 3
+	maxLoginLength    = 255
 )
 
 var itemTypes = []string{"CARD", "FILE", "AUTH", "TEXT"}
 
 var ErrUnknownType = fmt.Errorf("error unknown type")
 var ErrRequired = fmt.Errorf("error required field")
+var ErrLogin = fmt.Errorf("login error")
+var ErrLoginExists = fmt.Errorf("login exists")
+var ErrValidation = fmt.Errorf("validation error")
+var ErrGeneratePassword = fmt.Errorf("generate password error")
 
 // InputDataUser тип входящих данных пользователя
 type InputDataUser struct {
@@ -35,29 +42,6 @@ type CommonData struct {
 	CardPayer string `json:"card_payer,omitempty"`
 	CardValid string `json:"card_valid,omitempty"`
 	CardPin   string `json:"card_pin,omitempty"`
-}
-
-// Storage интерфейс хранилища
-type Storage interface {
-	Register(ctx context.Context, input InputDataUser) error
-	Login(ctx context.Context, input InputDataUser) (string, error)
-	AddItem(ctx context.Context, item CommonData, userID string, pin string, fileBytes []byte) (string, error)
-	GetItems(ctx context.Context, userID string, pin string) ([]CommonData, error)
-	GetItem(ctx context.Context, userID string, itemId string, pin string) (CommonData, []byte, error)
-	RemoveItem(ctx context.Context, userID string, itemId string) error
-	ShutDown() error
-}
-
-// NewStorage создание хранилища, config конфиг, logger - логгер
-func NewStorage(config config.Config, logger *zap.Logger) Storage {
-	res, err := db.Connect(config.DatabaseDSN)
-	if err != nil {
-		logger.Fatal(err.Error())
-	}
-	if err := db.Migrate(res); err != nil {
-		logger.Fatal(err.Error())
-	}
-	return CreateDBStorage(config, logger, res)
 }
 
 // ItemValidator простая валидация новой записи

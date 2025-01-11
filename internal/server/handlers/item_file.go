@@ -8,8 +8,13 @@ import (
 	"net/http"
 )
 
+// ItemInfo интерфейс данных по записи
+type ItemInfo interface {
+	GetItem(ctx context.Context, userID string, itemId string, pin string) (storage.CommonData, []byte, error)
+}
+
 // GetItemFileHandler обработчик роута: GET /api/items/file/{id}
-func GetItemFileHandler(s storage.Storage, tokenAuth *jwtauth.JWTAuth) http.HandlerFunc {
+func GetItemFileHandler(i ItemInfo, tokenAuth *jwtauth.JWTAuth) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		token, err := jwtauth.VerifyToken(tokenAuth, chi.URLParam(req, "token"))
 		if err != nil {
@@ -28,7 +33,7 @@ func GetItemFileHandler(s storage.Storage, tokenAuth *jwtauth.JWTAuth) http.Hand
 			return
 		}
 
-		item, fileBytes, err := s.GetItem(context.Background(), UserID.(string), chi.URLParam(req, "id"), PIN.(string))
+		item, fileBytes, err := i.GetItem(context.Background(), UserID.(string), chi.URLParam(req, "id"), PIN.(string))
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return

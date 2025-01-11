@@ -9,7 +9,7 @@ import (
 )
 
 // AddItemFileHandler обработчик роута: POST /api/items/file
-func AddItemFileHandler(s storage.Storage, maxUploadFileSize int64) http.HandlerFunc {
+func AddItemFileHandler(a AddItem, maxUploadFileSize int64) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		var input storage.CommonData
 		var fileBytes []byte
@@ -35,7 +35,7 @@ func AddItemFileHandler(s storage.Storage, maxUploadFileSize int64) http.Handler
 			return
 		}
 
-		itemID, err := s.AddItem(context.Background(), input, claims["UserID"].(string), claims["PIN"].(string), fileBytes)
+		itemID, err := a.AddItem(context.Background(), input, claims["UserID"].(string), claims["PIN"].(string), fileBytes)
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return

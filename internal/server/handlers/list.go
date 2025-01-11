@@ -8,15 +8,20 @@ import (
 	"net/http"
 )
 
+// ListItem интерфейс списка записей
+type ListItem interface {
+	GetItems(ctx context.Context, userID string, pin string) ([]storage.CommonData, error)
+}
+
 // GetItemsHandler обработчик роута: GET /api/items
-func GetItemsHandler(s storage.Storage) http.HandlerFunc {
+func GetItemsHandler(l ListItem) http.HandlerFunc {
 	return func(res http.ResponseWriter, req *http.Request) {
 		_, claims, err := jwtauth.FromContext(req.Context())
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusBadRequest)
 			return
 		}
-		items, err := s.GetItems(context.Background(), claims["UserID"].(string), claims["PIN"].(string))
+		items, err := l.GetItems(context.Background(), claims["UserID"].(string), claims["PIN"].(string))
 		if err != nil {
 			http.Error(res, err.Error(), http.StatusInternalServerError)
 			return
