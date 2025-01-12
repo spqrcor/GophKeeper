@@ -56,7 +56,27 @@ func NewApplication(opts ...func(*Application)) *Application {
 			SetText("(r) remove\n(b) back \n(q) to quit"),
 	}
 
-	app.initModals()
+	app.pinModal = tview.NewModal().
+		AddButtons([]string{"Ok"}).SetDoneFunc(func(buttonIndex int, buttonLabel string) {
+		app.pages.SwitchToPage("Pin Form")
+	})
+	app.regModal = tview.NewModal().
+		AddButtons([]string{"Ok"}).SetDoneFunc(func(buttonIndex int, buttonLabel string) {
+		app.pages.SwitchToPage("Reg Form")
+	})
+	app.loginModal = tview.NewModal().
+		AddButtons([]string{"Ok"}).SetDoneFunc(func(buttonIndex int, buttonLabel string) {
+		app.pages.SwitchToPage("Login Form")
+	})
+	app.newItemModal = tview.NewModal().
+		AddButtons([]string{"Ok"}).SetDoneFunc(func(buttonIndex int, buttonLabel string) {
+		app.pages.SwitchToPage("New Item Form")
+	})
+	app.removeModal = tview.NewModal().
+		AddButtons([]string{"Ok"}).SetDoneFunc(func(buttonIndex int, buttonLabel string) {
+		app.pages.SwitchToPage("Items")
+	})
+
 	app.newItemsMenu = app.createNewItemMenu()
 	app.menu = app.createMainMenu()
 

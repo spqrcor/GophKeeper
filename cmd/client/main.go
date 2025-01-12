@@ -4,7 +4,7 @@ import (
 	"GophKeeper/internal/client/application"
 	"GophKeeper/internal/client/config"
 	"GophKeeper/internal/client/logger"
-	"GophKeeper/internal/client/transport"
+	"GophKeeper/internal/client/transport/rest"
 	"log"
 )
 
@@ -14,7 +14,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	trans := transport.NewTransport(conf, loggerRes)
+	trans := rest.CreateRestTransport(conf, loggerRes)
 
 	app := application.NewApplication(
 		application.WithConfig(conf),

@@ -12,28 +12,12 @@ func (app *Application) addNewItemForm(itemType string) *tview.Form {
 		Type: itemType,
 	}
 
-	if itemType == "TEXT" {
+	switch data.Type {
+	case "TEXT":
 		app.newItemForm.AddInputField("Text", "", 40, nil, func(val string) {
 			data.Text = val
 		})
-	}
-
-	if itemType == "AUTH" {
-		app.newItemForm.AddInputField("Login", "", 20, nil, func(val string) {
-			data.Login = val
-		})
-		app.newItemForm.AddPasswordField("Password", "", 20, 0, func(val string) {
-			data.Password = val
-		})
-	}
-
-	if itemType == "FILE" {
-		app.newItemForm.AddInputField("File", "", 40, nil, func(val string) {
-			filepath = val
-		})
-	}
-
-	if itemType == "CARD" {
+	case "CARD":
 		app.newItemForm.AddInputField("Card Number", "", 20, nil, func(val string) {
 			data.CardNum = val
 		})
@@ -42,6 +26,17 @@ func (app *Application) addNewItemForm(itemType string) *tview.Form {
 		})
 		app.newItemForm.AddInputField("CVV", "", 10, nil, func(val string) {
 			data.CardPin = val
+		})
+	case "FILE":
+		app.newItemForm.AddInputField("File", "", 40, nil, func(val string) {
+			filepath = val
+		})
+	case "AUTH":
+		app.newItemForm.AddInputField("Login", "", 20, nil, func(val string) {
+			data.Login = val
+		})
+		app.newItemForm.AddPasswordField("Password", "", 20, 0, func(val string) {
+			data.Password = val
 		})
 	}
 
@@ -59,13 +54,17 @@ func (app *Application) addNewItemForm(itemType string) *tview.Form {
 		})
 	} else {
 		app.newItemForm.AddButton("save", func() {
-			if uuid, err := app.transport.AddItem(app.ctx, data); err != nil {
+			if err := validateNewItem(data); err != nil {
 				app.newItemModal.SetText(err.Error())
 			} else {
-				data.Id = uuid
-				app.data = append(app.data, data)
-				app.refreshItemsList()
-				app.newItemModal.SetText("Успешное добавление")
+				if uuid, err := app.transport.AddItem(app.ctx, data); err != nil {
+					app.newItemModal.SetText(err.Error())
+				} else {
+					data.Id = uuid
+					app.data = append(app.data, data)
+					app.refreshItemsList()
+					app.newItemModal.SetText("Успешное добавление")
+				}
 			}
 			app.pages.SwitchToPage(NewItemModalLink)
 

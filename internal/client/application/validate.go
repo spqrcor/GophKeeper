@@ -1,6 +1,9 @@
 package application
 
-import "fmt"
+import (
+	"GophKeeper/internal/client/models"
+	"fmt"
+)
 
 const (
 	minPasswordLength = 6
@@ -13,6 +16,7 @@ var (
 	ErrNotEqual     = fmt.Errorf("значения не равны")
 	ErrPinMinLength = fmt.Errorf("минимальная длина PIN - 4 знака")
 	ErrValidation   = fmt.Errorf("validation error")
+	ErrCardFormat   = fmt.Errorf("ошибка валидации номера карты")
 )
 
 // validatePinForm валидация формы с пином
@@ -24,6 +28,32 @@ func validatePinForm(pin string, pin2 string) error {
 		return ErrPinMinLength
 	}
 	return nil
+}
+
+// validateNewItem валидация новой записи
+func validateNewItem(data models.ItemData) error {
+	if data.Type == "CARD" && !luhnAlgorithm(data.CardNum) {
+		return ErrCardFormat
+	}
+	return nil
+}
+
+// luhnAlgorithm валидация по алгоритму Луна
+func luhnAlgorithm(cardNumber string) bool {
+	total := 0
+	isSecondDigit := false
+	for i := len(cardNumber) - 1; i >= 0; i-- {
+		digit := int(cardNumber[i] - '0')
+		if isSecondDigit {
+			digit *= 2
+			if digit > 9 {
+				digit -= 9
+			}
+		}
+		total += digit
+		isSecondDigit = !isSecondDigit
+	}
+	return total%10 == 0
 }
 
 // validateRegForm валидация формы регистрации

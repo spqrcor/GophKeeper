@@ -41,39 +41,6 @@ type modalItem struct {
 	link  string
 }
 
-// initModals инициализация модальных окон
-func (app *Application) initModals() {
-	modals := []modalItem{
-		{
-			app.pinModal,
-			PinFormLink,
-		},
-		{
-			app.regModal,
-			RegFormLink,
-		},
-		{
-			app.loginModal,
-			LoginFormLink,
-		},
-		{
-			app.newItemModal,
-			NewItemFormLink,
-		},
-		{
-			app.removeModal,
-			ItemsLink,
-		},
-	}
-
-	for _, item := range modals {
-		item.modal = tview.NewModal().
-			AddButtons([]string{"Ok"}).SetDoneFunc(func(buttonIndex int, buttonLabel string) {
-			app.pages.SwitchToPage(item.link)
-		})
-	}
-}
-
 // addPages Добавление страниц
 func (app *Application) addPages() {
 	pages := []pageItem{
@@ -113,6 +80,7 @@ func (app *Application) addPages() {
 			Resize:  false,
 			Visible: false,
 		},
+
 		{
 			Name:    RegModalLink,
 			Item:    app.regModal,
