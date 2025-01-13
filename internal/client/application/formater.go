@@ -5,12 +5,13 @@ import (
 	"GophKeeper/internal/client/models"
 	"GophKeeper/internal/client/transport"
 	"fmt"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"time"
 )
 
 // formatTitle краткое отображение записи
-func formatTitle(data models.ItemData) string {
-	itemType := getTypeDescription(data.Type)
+func (app *Application) formatTitle(data models.ItemData) string {
+	itemType := app.getTypeDescription(data.Type)
 	switch data.Type {
 	case "TEXT":
 		return fmt.Sprintf("%s: *****", itemType)
@@ -21,74 +22,166 @@ func formatTitle(data models.ItemData) string {
 	case "AUTH":
 		return fmt.Sprintf("%s: %s/****", itemType, data.Login)
 	}
-	return "Тип не определен"
+	return app.localizer.MustLocalize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{
+			ID: "unknownType",
+		},
+	})
 }
 
 // formatFullText описание текста
-func formatFullText(data models.ItemData) string {
-	text := "Тип: " + getTypeDescription(data.Type) + "\n"
-	text += "Добавлен: " + formatDescription(data) + "\n"
-	text += "Текст: " + data.Text
+func (app *Application) formatFullText(data models.ItemData) string {
+	text := app.localizer.MustLocalize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{
+			ID: "type",
+		},
+	}) + ": " + app.getTypeDescription(data.Type) + "\n"
+	text += app.localizer.MustLocalize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{
+			ID: "added",
+		},
+	}) + ": " + formatDescription(data) + "\n"
+	text += app.localizer.MustLocalize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{
+			ID: "text",
+		},
+	}) + ": " + data.Text
 	return text
 }
 
 // formatFullCard описание карты
-func formatFullCard(data models.ItemData) string {
-	text := "Тип: " + getTypeDescription(data.Type) + "\n"
-	text += "Добавлен: " + formatDescription(data) + "\n"
-	text += "Номер: " + data.CardNum + "\n"
+func (app *Application) formatFullCard(data models.ItemData) string {
+	text := app.localizer.MustLocalize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{
+			ID: "type",
+		},
+	}) + ": " + app.getTypeDescription(data.Type) + "\n"
+	text += app.localizer.MustLocalize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{
+			ID: "added",
+		},
+	}) + ": " + formatDescription(data) + "\n"
+	text += app.localizer.MustLocalize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{
+			ID: "cardNumber",
+		},
+	}) + ": " + data.CardNum + "\n"
 	text += "CVV: " + data.CardPin + "\n"
-	text += "Срок действия: " + data.CardValid + "\n"
-	text += "Плательщик: " + data.CardPayer
+	text += app.localizer.MustLocalize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{
+			ID: "validDate",
+		},
+	}) + ": " + data.CardValid + "\n"
+	text += app.localizer.MustLocalize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{
+			ID: "payer",
+		},
+	}) + ": " + data.CardPayer
 	return text
 }
 
 // formatFullFile описание файла
-func formatFullFile(data models.ItemData, config config.Config, transportData *transport.Data) string {
-	text := "Тип: " + getTypeDescription(data.Type) + "\n"
-	text += "Добавлен: " + formatDescription(data) + "\n"
-	text += "Название: " + data.FileName + "\n"
-	text += "Ссылка: " + config.Api + "/api/items/file/" + data.Id + "/token/" + transportData.Token
+func (app *Application) formatFullFile(data models.ItemData, config config.Config, transportData *transport.Data) string {
+	text := app.localizer.MustLocalize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{
+			ID: "type",
+		},
+	}) + ": " + app.getTypeDescription(data.Type) + "\n"
+	text += app.localizer.MustLocalize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{
+			ID: "added",
+		},
+	}) + ": " + formatDescription(data) + "\n"
+	text += app.localizer.MustLocalize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{
+			ID: "name",
+		},
+	}) + ": " + data.FileName + "\n"
+	text += app.localizer.MustLocalize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{
+			ID: "link",
+		},
+	}) + ": " + config.Api + "/api/items/file/" + data.Id + "/token/" + transportData.Token
 	return text
 }
 
 // formatFullTextAuth описание авторизации
-func formatFullTextAuth(data models.ItemData) string {
-	text := "Тип: " + getTypeDescription(data.Type) + "\n"
-	text += "Добавлен: " + formatDescription(data) + "\n"
-	text += "Логин: " + data.Login + "\n"
-	text += "Пароль: " + data.Password
+func (app *Application) formatFullTextAuth(data models.ItemData) string {
+	text := app.localizer.MustLocalize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{
+			ID: "type",
+		},
+	}) + ": " + app.getTypeDescription(data.Type) + "\n"
+	text += app.localizer.MustLocalize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{
+			ID: "added",
+		},
+	}) + ": " + formatDescription(data) + "\n"
+	text += app.localizer.MustLocalize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{
+			ID: "login",
+		},
+	}) + ": " + data.Login + "\n"
+	text += app.localizer.MustLocalize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{
+			ID: "password",
+		},
+	}) + ": " + data.Password
 	return text
 }
 
 // formatFull полное отображение записи
-func formatFull(data models.ItemData, config config.Config, transportData *transport.Data) string {
+func (app *Application) formatFull(data models.ItemData, config config.Config, transportData *transport.Data) string {
 	switch data.Type {
 	case "TEXT":
-		return formatFullText(data)
+		return app.formatFullText(data)
 	case "CARD":
-		return formatFullCard(data)
+		return app.formatFullCard(data)
 	case "FILE":
-		return formatFullFile(data, config, transportData)
+		return app.formatFullFile(data, config, transportData)
 	case "AUTH":
-		return formatFullTextAuth(data)
+		return app.formatFullTextAuth(data)
 	}
-	return "Тип не определен"
+	return app.localizer.MustLocalize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{
+			ID: "unknownType",
+		},
+	})
 }
 
 // getTypeDescription получение описания типа
-func getTypeDescription(itemType string) string {
+func (app *Application) getTypeDescription(itemType string) string {
 	switch itemType {
 	case "TEXT":
-		return "Текст"
+		return app.localizer.MustLocalize(&i18n.LocalizeConfig{
+			DefaultMessage: &i18n.Message{
+				ID: "text",
+			},
+		})
 	case "CARD":
-		return "Карта"
+		return app.localizer.MustLocalize(&i18n.LocalizeConfig{
+			DefaultMessage: &i18n.Message{
+				ID: "card",
+			},
+		})
 	case "FILE":
-		return "Файл"
+		return app.localizer.MustLocalize(&i18n.LocalizeConfig{
+			DefaultMessage: &i18n.Message{
+				ID: "file",
+			},
+		})
 	case "AUTH":
-		return "Логин/пароль"
+		return app.localizer.MustLocalize(&i18n.LocalizeConfig{
+			DefaultMessage: &i18n.Message{
+				ID: "authorization",
+			},
+		})
 	}
-	return "Тип не определен"
+	return app.localizer.MustLocalize(&i18n.LocalizeConfig{
+		DefaultMessage: &i18n.Message{
+			ID: "unknownType",
+		},
+	})
 }
 
 // formatDescription форматирование даты

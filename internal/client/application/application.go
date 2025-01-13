@@ -7,6 +7,7 @@ import (
 	"GophKeeper/internal/client/transport"
 	"context"
 	"github.com/gdamore/tcell/v2"
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/rivo/tview"
 	"go.uber.org/zap"
 )
@@ -16,6 +17,7 @@ type Application struct {
 	config       config.Config
 	logger       *zap.Logger
 	transport    transport.Transport
+	localizer    *i18n.Localizer
 	ctx          context.Context
 	data         []models.ItemData
 	pages        *tview.Pages
@@ -51,10 +53,19 @@ func NewApplication(opts ...func(*Application)) *Application {
 		itemText:    tview.NewTextView(),
 		itemsList:   tview.NewList().ShowSecondaryText(false),
 		flex:        tview.NewFlex(),
-		text: tview.NewTextView().
-			SetTextColor(tcell.ColorGreen).
-			SetText("(r) remove\n(b) back \n(q) to quit"),
 	}
+
+	for _, opt := range opts {
+		opt(app)
+	}
+
+	app.text = tview.NewTextView().
+		SetTextColor(tcell.ColorGreen).
+		SetText(app.localizer.MustLocalize(&i18n.LocalizeConfig{
+			DefaultMessage: &i18n.Message{
+				ID: "itemsFrontControl",
+			},
+		}))
 
 	app.pinModal = tview.NewModal().
 		AddButtons([]string{"Ok"}).SetDoneFunc(func(buttonIndex int, buttonLabel string) {
@@ -79,10 +90,6 @@ func NewApplication(opts ...func(*Application)) *Application {
 
 	app.newItemsMenu = app.createNewItemMenu()
 	app.menu = app.createMainMenu()
-
-	for _, opt := range opts {
-		opt(app)
-	}
 	return app
 }
 
@@ -107,6 +114,13 @@ func WithTransport(transport transport.Transport) func(*Application) {
 	}
 }
 
+// WithLocalizer добавление localizer
+func WithLocalizer(localizer *i18n.Localizer) func(*Application) {
+	return func(a *Application) {
+		a.localizer = localizer
+	}
+}
+
 // syncData получение данных с сервера
 func (app *Application) syncData() {
 	items, err := app.transport.GetItems(app.ctx)
@@ -121,14 +135,14 @@ func (app *Application) syncData() {
 func (app *Application) refreshItemsList() {
 	app.itemsList.Clear()
 	for index, item := range app.data {
-		app.itemsList.AddItem(formatTitle(item), " ", rune(49+index), nil)
+		app.itemsList.AddItem(app.formatTitle(item), " ", rune(49+index), nil)
 	}
 }
 
 // setConcatText отображение подробных данных
 func (app *Application) setConcatText(item *models.ItemData) {
 	app.itemText.Clear()
-	app.itemText.SetText(formatFull(*item, app.config, app.transport.GetData()))
+	app.itemText.SetText(app.formatFull(*item, app.config, app.transport.GetData()))
 }
 
 // deleteListItem удаление записи

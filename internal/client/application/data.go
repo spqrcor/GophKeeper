@@ -1,6 +1,7 @@
 package application
 
 import (
+	"github.com/nicksnyder/go-i18n/v2/i18n"
 	"github.com/rivo/tview"
 )
 
@@ -129,9 +130,12 @@ func (app *Application) createMainMenu() *tview.List {
 	menu := tview.NewList()
 	mainMenu := []menuItem{
 		{
-			MainText:      "Set PIN",
-			SecondaryText: "Установка PIN",
-			ShortCut:      'p',
+			MainText: app.localizer.MustLocalize(&i18n.LocalizeConfig{
+				DefaultMessage: &i18n.Message{
+					ID: "setPIN",
+				},
+			}),
+			ShortCut: 'p',
 			Selected: func() {
 				app.pinForm.Clear(true)
 				app.addPinForm()
@@ -139,9 +143,12 @@ func (app *Application) createMainMenu() *tview.List {
 			},
 		},
 		{
-			MainText:      "Registration",
-			SecondaryText: "Форма регистрации",
-			ShortCut:      'r',
+			MainText: app.localizer.MustLocalize(&i18n.LocalizeConfig{
+				DefaultMessage: &i18n.Message{
+					ID: "registration",
+				},
+			}),
+			ShortCut: 'r',
 			Selected: func() {
 				app.regForm.Clear(true)
 				app.addRegForm()
@@ -149,9 +156,12 @@ func (app *Application) createMainMenu() *tview.List {
 			},
 		},
 		{
-			MainText:      "Login form",
-			SecondaryText: "Форма авторизации",
-			ShortCut:      'l',
+			MainText: app.localizer.MustLocalize(&i18n.LocalizeConfig{
+				DefaultMessage: &i18n.Message{
+					ID: "authorization",
+				},
+			}),
+			ShortCut: 'l',
 			Selected: func() {
 				app.loginForm.Clear(true)
 				app.addLoginForm()
@@ -159,25 +169,34 @@ func (app *Application) createMainMenu() *tview.List {
 			},
 		},
 		{
-			MainText:      "Items",
-			SecondaryText: "Список записей",
-			ShortCut:      'i',
+			MainText: app.localizer.MustLocalize(&i18n.LocalizeConfig{
+				DefaultMessage: &i18n.Message{
+					ID: "items",
+				},
+			}),
+			ShortCut: 'i',
 			Selected: func() {
 				app.pages.SwitchToPage(ItemsLink)
 			},
 		},
 		{
-			MainText:      "New item",
-			SecondaryText: "Добавление записи",
-			ShortCut:      'n',
+			MainText: app.localizer.MustLocalize(&i18n.LocalizeConfig{
+				DefaultMessage: &i18n.Message{
+					ID: "newItem",
+				},
+			}),
+			ShortCut: 'n',
 			Selected: func() {
 				app.pages.SwitchToPage(NewItemsMenuLink)
 			},
 		},
 		{
-			MainText:      "Quit",
-			SecondaryText: "Закрыть приложение",
-			ShortCut:      'q',
+			MainText: app.localizer.MustLocalize(&i18n.LocalizeConfig{
+				DefaultMessage: &i18n.Message{
+					ID: "quit",
+				},
+			}),
+			ShortCut: 'q',
 			Selected: func() {
 				app.tapp.Stop()
 			},
@@ -195,9 +214,12 @@ func (app *Application) createNewItemMenu() *tview.List {
 	menu := tview.NewList()
 	newItemMenu := []menuItem{
 		{
-			MainText:      "New Item Text",
-			SecondaryText: "Добавление текста",
-			ShortCut:      't',
+			MainText: app.localizer.MustLocalize(&i18n.LocalizeConfig{
+				DefaultMessage: &i18n.Message{
+					ID: "newItemText",
+				},
+			}),
+			ShortCut: 't',
 			Selected: func() {
 				app.newItemForm.Clear(true)
 				app.addNewItemForm("TEXT")
@@ -205,9 +227,12 @@ func (app *Application) createNewItemMenu() *tview.List {
 			},
 		},
 		{
-			MainText:      "New Item Login",
-			SecondaryText: "Добавление логина/пароля",
-			ShortCut:      'l',
+			MainText: app.localizer.MustLocalize(&i18n.LocalizeConfig{
+				DefaultMessage: &i18n.Message{
+					ID: "newItemLogin",
+				},
+			}),
+			ShortCut: 'l',
 			Selected: func() {
 				app.newItemForm.Clear(true)
 				app.addNewItemForm("AUTH")
@@ -215,9 +240,12 @@ func (app *Application) createNewItemMenu() *tview.List {
 			},
 		},
 		{
-			MainText:      "New Item Card",
-			SecondaryText: "Добавление данных по карте",
-			ShortCut:      'c',
+			MainText: app.localizer.MustLocalize(&i18n.LocalizeConfig{
+				DefaultMessage: &i18n.Message{
+					ID: "newItemCard",
+				},
+			}),
+			ShortCut: 'c',
 			Selected: func() {
 				app.newItemForm.Clear(true)
 				app.addNewItemForm("CARD")
@@ -225,9 +253,12 @@ func (app *Application) createNewItemMenu() *tview.List {
 			},
 		},
 		{
-			MainText:      "New Item File",
-			SecondaryText: "Добавление файла",
-			ShortCut:      'f',
+			MainText: app.localizer.MustLocalize(&i18n.LocalizeConfig{
+				DefaultMessage: &i18n.Message{
+					ID: "newItemFile",
+				},
+			}),
+			ShortCut: 'f',
 			Selected: func() {
 				app.newItemForm.Clear(true)
 				app.addNewItemForm("FILE")
@@ -235,17 +266,23 @@ func (app *Application) createNewItemMenu() *tview.List {
 			},
 		},
 		{
-			MainText:      "Back",
-			SecondaryText: "Вернуться в главное меню",
-			ShortCut:      'b',
+			MainText: app.localizer.MustLocalize(&i18n.LocalizeConfig{
+				DefaultMessage: &i18n.Message{
+					ID: "back",
+				},
+			}),
+			ShortCut: 'b',
 			Selected: func() {
 				app.pages.SwitchToPage(MenuLink)
 			},
 		},
 		{
-			MainText:      "Quit",
-			SecondaryText: "Закрыть приложение",
-			ShortCut:      'q',
+			MainText: app.localizer.MustLocalize(&i18n.LocalizeConfig{
+				DefaultMessage: &i18n.Message{
+					ID: "quit",
+				},
+			}),
+			ShortCut: 'q',
 			Selected: func() {
 				app.tapp.Stop()
 			},

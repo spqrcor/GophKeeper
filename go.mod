@@ -3,6 +3,7 @@ module GophKeeper
 go 1.22
 
 require (
+	github.com/BurntSushi/toml v1.4.0
 	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/brianvoe/gofakeit/v7 v7.1.2
 	github.com/gavv/httpexpect/v2 v2.16.0
@@ -13,11 +14,13 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.7.2
 	github.com/lestrrat-go/jwx/v2 v2.1.3
+	github.com/nicksnyder/go-i18n/v2 v2.4.1
 	github.com/pressly/goose/v3 v3.24.0
 	github.com/rivo/tview v0.0.0-20241227133733-17b7edb88c57
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/crypto v0.31.0
+	golang.org/x/text v0.21.0
 )
 
 require (
@@ -70,7 +73,6 @@ require (
 	golang.org/x/sync v0.10.0 // indirect
 	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/term v0.27.0 // indirect
-	golang.org/x/text v0.21.0 // indirect
 	gopkg.in/fsnotify.v1 v1.4.7 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

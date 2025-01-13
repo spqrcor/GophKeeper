@@ -18,6 +18,8 @@ type Config struct {
 	TransportFile  string        `env:"TRANSPORT_FILE"`
 	SecretKey      string        `env:"SECRET_KEY"`
 	RequestTimeOut time.Duration `env:"REQUEST_TIME_OUT"`
+	Language       string        `env:"LANGUAGE"`
+	LanguagePath   string        `env:"LANGUAGE_PATH"`
 }
 
 // cfg переменная конфига
@@ -28,6 +30,8 @@ var cfg = Config{
 	TransportFile:  "transport",
 	SecretKey:      "KLJ-fo3Fksd3fl!=",
 	RequestTimeOut: 30 * time.Second,
+	Language:       "en",
+	LanguagePath:   "./../../internal/client/i18",
 }
 
 var once sync.Once
